@@ -113,10 +113,10 @@ def wein_loss(X, batch_number, alpha, r):
         if count > batch_number:
             count = 1
 
-        #output1 = model.get_layer(index=32)(X[count-1:count,:,:,:])
-        output2 = model.get_layer(index=33)(X[count-1:count,:,:,:])
-        output3 = model.get_layer(index=34)(X[count-1:count,:,:,:])
-        output4 = model.get_layer(index=35)(X[count-1:count,:,:,:])
+        #output1 = model.get_layer(index=31)(X[count-1:count,:,:,:])
+        output2 = model.get_layer(index=32)(X[count-1:count,:,:,:])
+        output3 = model.get_layer(index=33)(X[count-1:count,:,:,:])
+        output4 = model.get_layer(index=34)(X[count-1:count,:,:,:])
 
         block_output = [output2, output3, output4]
         
