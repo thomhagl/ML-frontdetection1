@@ -194,17 +194,6 @@ model.compile(
 
 history = model.fit(x_train, y_train, epochs=50, batch_size=1, shuffle=False)
 
-plt.show()
-
-plt.figure()
-plt.plot(history.history['custom_metric'])
-plt.savefig("accuracy1.png")
-
-plt.figure()
-plt.plot(history.history['loss'])
-plt.savefig("training_loss1.png")
-plt.show()
-
 test_scores = model.evaluate(x_test, y_test, verbose=1)
 print("Test loss:", test_scores[0])
 print("Test accuracy:", test_scores[1])
