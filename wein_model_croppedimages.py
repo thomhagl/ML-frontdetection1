@@ -9,8 +9,7 @@ from tensorflow.python.ops.gen_array_ops import tensor_scatter_add
 model_input = keras.Input(shape=(100, 100, 1))
 
 "-- Main blocks level --"
-normalization = layers.BatchNormalization()(model_input)
-block1_1 = layers.Conv2D(filters=64, kernel_size=(3,3), padding="same")(normalization)
+block1_1 = layers.Conv2D(filters=64, kernel_size=(3,3), padding="same")(model_input)
 block1_2 = layers.Conv2D(filters=64, kernel_size=(3,3), padding="same")(block1_1)
 #batchnormal1 = layers.BatchNormalization()(block1_2)
 block1_maxpool = layers.MaxPooling2D(pool_size=(2,2), padding="same", strides=1)(block1_2)
@@ -186,8 +185,8 @@ y_train = Y_data[0:19, :, :]
 y_test = Y_data[20:21, :, :]
 
 model.compile(
-    loss=wein_loss(x_train, 19, 100, 2),
-    optimizer=keras.optimizers.SGD(learning_rate=1e-3, momentum=0.1),
+    loss=wein_loss(x_train, 19, 1000, 2),
+    optimizer=keras.optimizers.SGD(learning_rate=1e-6, momentum=0.1),
     metrics=iou,
     run_eagerly=True,
 )
