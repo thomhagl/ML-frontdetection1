@@ -9,8 +9,7 @@ from tensorflow.python.ops.gen_array_ops import tensor_scatter_add
 model_input = keras.Input(shape=(100, 100, 1))
 
 "-- Main blocks level --"
-normalization = layers.BatchNormalization()(model_input)
-block1_1 = layers.Conv2D(filters=64, kernel_size=(3,3), padding="same")(normalization)
+block1_1 = layers.Conv2D(filters=64, kernel_size=(3,3), padding="same")(model_input)
 block1_2 = layers.Conv2D(filters=64, kernel_size=(3,3), padding="same")(block1_1)
 #batchnormal1 = layers.BatchNormalization()(block1_2)
 block1_maxpool = layers.MaxPooling2D(pool_size=(2,2), padding="same", strides=1)(block1_2)
@@ -114,10 +113,10 @@ def wein_loss(X, batch_number, alpha, r):
         if count > batch_number:
             count = 1
 
-        #output1 = model.get_layer(index=32)(X[count-1:count,:,:,:])
-        output2 = model.get_layer(index=33)(X[count-1:count,:,:,:])
-        output3 = model.get_layer(index=34)(X[count-1:count,:,:,:])
-        output4 = model.get_layer(index=35)(X[count-1:count,:,:,:])
+        #output1 = model.get_layer(index=31)(X[count-1:count,:,:,:])
+        output2 = model.get_layer(index=32)(X[count-1:count,:,:,:])
+        output3 = model.get_layer(index=33)(X[count-1:count,:,:,:])
+        output4 = model.get_layer(index=34)(X[count-1:count,:,:,:])
 
         block_output = [output2, output3, output4]
         
@@ -186,24 +185,13 @@ y_train = Y_data[0:19, :, :]
 y_test = Y_data[20:21, :, :]
 
 model.compile(
-    loss=wein_loss(x_train, 19, 100, 2),
-    optimizer=keras.optimizers.SGD(learning_rate=1e-3, momentum=0.1),
+    loss=wein_loss(x_train, 19, 1000, 2),
+    optimizer=keras.optimizers.SGD(learning_rate=1e-6, momentum=0.1),
     metrics=iou,
     run_eagerly=True,
 )
 
 history = model.fit(x_train, y_train, epochs=50, batch_size=1, shuffle=False)
-
-plt.show()
-
-plt.figure()
-plt.plot(history.history['custom_metric'])
-plt.savefig("accuracy1.png")
-
-plt.figure()
-plt.plot(history.history['loss'])
-plt.savefig("training_loss1.png")
-plt.show()
 
 test_scores = model.evaluate(x_test, y_test, verbose=1)
 print("Test loss:", test_scores[0])
