@@ -6,10 +6,10 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.python.ops.gen_array_ops import tensor_scatter_add
 
-model_input = keras.Input(shape=(100, 100, 1))
+model_input = keras.Input(shape=(375, 375, 1))
 
 "-- Main blocks level --"
-normalization = layers.BatchNormalization()(model_input)
+normalization = layers.BatchNormalization(momentum=0.5)(model_input)
 block1_1 = layers.Conv2D(filters=64, kernel_size=(3,3), padding="same")(normalization)
 block1_2 = layers.Conv2D(filters=64, kernel_size=(3,3), padding="same")(block1_1)
 #batchnormal1 = layers.BatchNormalization()(block1_2)
@@ -103,7 +103,7 @@ count = 1
 
 def wein_loss(X, batch_number, alpha, r):
 
-    X = tf.reshape(X,shape=(batch_number,100,100,1))
+    X = tf.reshape(X,shape=(batch_number,375,375,1))
 
     def loss(y_true, y_pred):
 
@@ -132,7 +132,7 @@ def wein_loss(X, batch_number, alpha, r):
             for j in range(shape[0].numpy()):
                 for output in block_output:
                 
-                    l1 = loss_wce(output[0,i,j,0], r, beta, 1) + alpha*loss_iou(y_true, y_pred)
+                    l1 = loss_wce(output[0,i,j,0], r, beta, 1) + alpha*loss_iou(output[0,:,:,0], y_pred)
 
                     L = L + l1
                 
@@ -153,62 +153,75 @@ def iou(y_true, y_pred):
 
     iou = predicted_intersection/predicted_union
 
-    return tf.cast(iou, tf.float32)
+    return iou
+X_data = np.zeros((140,375,375))
+Y_data = np.zeros((140,375,375))
 
-X_data = np.zeros((21,100,100))
-Y_data = np.zeros((21,100,100))
-
-for k in range(0, 21):
+for k in range(0, 70):
 
     filename = "example" + str(k) + ".csv"
 
-    x = np.loadtxt("./cropped_examples/input/" + filename)
-    y = np.loadtxt("./cropped_examples/output/" + filename)
+    x = np.loadtxt("./training_smallimages/input/" + filename)
+    y = np.loadtxt("./training_smallimages/output/" + filename)
 
     for i in range(x.shape[0]):
         for j in range(x.shape[1]):
             if x[i,j] < 0:
                 x[i,j] = np.nan
     
+                
     grad = np.gradient(x)
 
     x = np.nan_to_num(np.sqrt(np.square(grad[0]) + np.square(grad[1])))
-    y = np.nan_to_num(y)
-    
-    for i in range(0,100):
-        for j in range(0,100):
-            X_data[k, i, j] = x[i,j]/0.5
-            Y_data[k, i, j] = y[i,j]
 
-x_train = X_data[0:19, :, :]
-x_test = X_data[20:21, :, :]
-y_train = Y_data[0:19, :, :]
-y_test = Y_data[20:21, :, :]
+    x_rot = np.loadtxt("./training_smallimages/data_augmentation/rotate/input/" + filename)
+    y_rot = np.loadtxt("./training_smallimages/data_augmentation/rotate/output/" + filename)
+
+    for i in range(x.shape[0]):
+        for j in range(x.shape[1]):
+            if x_rot[i,j] < 0:
+                x_rot[i,j] = np.nan
+    
+    grad_rot = np.gradient(x)
+
+    x_rot = np.nan_to_num(np.sqrt(np.square(grad_rot[0]) + np.square(grad_rot[1])))
+
+    for i in range(0,375):
+        for j in range(0,375):
+            X_data[k, i, j] = x[i,j]
+            X_data[k+70, i, j] = x_rot[i,j]
+            Y_data[k, i, j] = y[i,j]
+            Y_data[k+70, i, j] = y_rot[i,j]
+
+
+x_train = X_data[0:80, :, :]
+x_test = X_data[130:140, :, :]
+y_train = Y_data[0:80, :, :]
+y_test = Y_data[130:140, :, :]
 
 model.compile(
-    loss=wein_loss(x_train, 19, 100, 2),
-    optimizer=keras.optimizers.SGD(learning_rate=1e-3, momentum=0.1),
+    loss=wein_loss(x_train, 80, 1000, 2),
+    optimizer=keras.optimizers.SGD(learning_rate=1e-6, momentum=0.5),
     metrics=iou,
     run_eagerly=True,
 )
 
-history = model.fit(x_train, y_train, epochs=50, batch_size=1, shuffle=False)
+history = model.fit(x_train, y_train, epochs=10, batch_size=1, shuffle=False)
 
-plt.show()
+model.save_weights('my_model_weights.h5')
 
 plt.figure()
-plt.plot(history.history['custom_metric'])
-plt.savefig("accuracy1.png")
+plt.plot(history.history['iou'])
+plt.savefig("accuracy.png")
 
 plt.figure()
 plt.plot(history.history['loss'])
-plt.savefig("training_loss1.png")
+plt.savefig("training_loss.png")
 plt.show()
 
 test_scores = model.evaluate(x_test, y_test, verbose=1)
 print("Test loss:", test_scores[0])
 print("Test accuracy:", test_scores[1])
 
-model.save_weights('my_model_weights8.h5')
 
 
