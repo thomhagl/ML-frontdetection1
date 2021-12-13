@@ -206,7 +206,7 @@ model.compile(
     run_eagerly=True,
 )
 
-history = model.fit(x_train, y_train, epochs=10, batch_size=1, shuffle=False)
+history = model.fit(x_train, y_train, epochs=5, batch_size=1, shuffle=False)
 
 model.save_weights('my_model_weights.h5')
 
