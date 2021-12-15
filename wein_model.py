@@ -206,7 +206,7 @@ model.compile(
     run_eagerly=True,
 )
 
-history = model.fit(x_train, y_train, epochs=5, batch_size=1, shuffle=False)
+history = model.fit(x_train, y_train, epochs=10, batch_size=1, shuffle=False)
 
 model.save_weights('my_model_weights.h5')
 
@@ -219,9 +219,6 @@ plt.plot(history.history['loss'])
 plt.savefig("training_loss.png")
 plt.show()
 
-test_scores = model.evaluate(x_test, y_test, verbose=1)
-print("Test loss:", test_scores[0])
-print("Test accuracy:", test_scores[1])
 
 
 
