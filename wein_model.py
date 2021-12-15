@@ -132,7 +132,7 @@ def wein_loss(X, batch_number, alpha, r):
             for j in range(shape[0].numpy()):
                 for output in block_output:
                 
-                    l1 = loss_wce(output[0,i,j,0], r, beta, 1) + alpha*loss_iou(output[0,:,:,0], y_pred)
+                    l1 = loss_wce(output[0,i,j,0], r, beta, 1) + alpha*loss_iou(y_true, output[0,:,:,0])
 
                     L = L + l1
                 
